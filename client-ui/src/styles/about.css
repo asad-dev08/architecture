@@ -1,0 +1,41 @@
+/* FAQ Animations */
+.faq-answer {
+  transition: all 0.3s ease-in-out;
+}
+
+.faq-answer-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.faq-answer-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.faq-answer-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.faq-answer-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Video Section Hover Effects */
+.video-container {
+  transition: transform 0.3s ease;
+}
+
+.video-container:hover {
+  transform: scale(1.02);
+}
+
+.play-button {
+  transition: all 0.3s ease;
+}
+
+.video-container:hover .play-button {
+  transform: scale(1.1);
+}

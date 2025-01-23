@@ -1,0 +1,429 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model ApplicationLog {
+  id        String   @unique @default(uuid())
+  level     String
+  message   String
+  meta      Json
+  timestamp DateTime
+
+  @@map("application_logs")
+}
+
+model AuditLog {
+  id            String   @unique @default(uuid())
+  table_name    String
+  record_id     String
+  action        String
+  previous_data Json
+  new_data      Json
+  changed_by    String
+  timestamp     DateTime
+
+  @@map("audit_logs")
+}
+
+model Company {
+  id                  String  @unique @default(uuid())
+  company_name        String
+  company_short_name  String?
+  company_code        String?
+  registration_number String
+  tax_id              String
+  address             String?
+  city                String?
+  state               String?
+  country             String?
+  postal_code         String?
+  phone               String
+  email               String
+  website             String?
+
+  industry              String?
+  number_of_employees   Int?
+  annual_revenue        Decimal?                @db.Decimal(20, 2)
+  description           String?
+  is_active             Boolean
+  CompanyAdditionalInfo CompanyAdditionalInfo[]
+
+  @@map("companies")
+}
+
+model User {
+  id       String @unique @default(uuid())
+  fullname String
+  username String
+
+  email             String   @unique
+  password          String
+  address           String?
+  phone             String
+  is_active         Boolean?
+  is_admin          Boolean?
+  is_password_reset Boolean?
+  user_type         String
+
+  UserGroups UserGroup[]
+
+  created_at   DateTime       @default(now())
+  created_by   String
+  created_ip   String?
+  updated_at   DateTime       @updatedAt
+  updated_by   String?
+  updated_ip   String?
+  company_id   String
+  RefreshToken RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @unique @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  isRevoked Boolean  @default(false)
+}
+
+model SecurityRule {
+  id          String  @unique @default(uuid())
+  name        String
+  description String?
+
+  created_at                      DateTime                         @default(now())
+  created_by                      String
+  created_ip                      String?
+  updated_at                      DateTime                         @updatedAt
+  updated_by                      String?
+  updated_ip                      String?
+  company_id                      String
+  SecurityRuleWiseMenuPermissions SecurityRuleWiseMenuPermission[]
+  SecurityGroupRules              SecurityGroupRule[]
+
+  @@map("security_rule")
+}
+
+model SecurityRuleWiseMenuPermission {
+  id         String  @unique @default(uuid())
+  menu_id    Int
+  can_view   Boolean
+  can_create Boolean
+  can_update Boolean
+  can_delete Boolean
+  can_report Boolean
+
+  rule_id       String
+  security_rule SecurityRule @relation(fields: [rule_id], references: [id])
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("security_rule_wise_menu_permission")
+}
+
+model SecurityGroup {
+  id          String  @unique @default(uuid())
+  name        String
+  description String?
+
+  created_at         DateTime            @default(now())
+  created_by         String
+  created_ip         String?
+  updated_at         DateTime            @updatedAt
+  updated_by         String?
+  updated_ip         String?
+  company_id         String
+  SecurityGroupRules SecurityGroupRule[]
+  UserGroups         UserGroup[]
+
+  @@map("security_group")
+}
+
+model SecurityGroupRule {
+  id             String        @unique @default(uuid())
+  group_id       String
+  security_group SecurityGroup @relation(fields: [group_id], references: [id])
+  rule_id        String
+  security_rule  SecurityRule  @relation(fields: [rule_id], references: [id])
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("security_group_rule")
+}
+
+model UserGroup {
+  id             String        @unique @default(uuid())
+  user_id        String
+  user           User          @relation(fields: [user_id], references: [id])
+  group_id       String
+  security_group SecurityGroup @relation(fields: [group_id], references: [id])
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("user_group")
+}
+
+model Menu {
+  id           Int      @unique @default(autoincrement())
+  title        String
+  url          String?
+  icon         String?
+  icon_library String?
+  parent_id    Int
+  sequence_no  Decimal  @db.Decimal(20, 2)
+  is_active    Boolean
+  can_view     Boolean?
+  can_create   Boolean?
+  can_update   Boolean?
+  can_delete   Boolean?
+  can_report   Boolean?
+
+  @@map("menus")
+}
+
+model Project {
+  id            String    @unique @default(uuid())
+  title         String
+  subtitle      String?
+  description   String?
+  start_date    DateTime
+  end_date      DateTime?
+  thumbnail_url String?
+  city          String?
+  country       String?
+  address       String?
+  client_name   String?
+  category      Category  @relation(fields: [category_id], references: [id])
+  category_id   String
+  area          Decimal?  @db.Decimal(10, 2)
+  is_featured   Boolean   @default(false)
+  tags          Json? // Stored as array
+  budget        Decimal?  @db.Decimal(10, 2)
+  status        String
+
+  gallery      ProjectGallery[]
+  key_features ProjectKeyFeature[]
+  services     ProjectService[]
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("projects")
+}
+
+model ProjectGallery {
+  id          String  @unique @default(uuid())
+  project_id  String
+  project     Project @relation(fields: [project_id], references: [id])
+  image_url   String
+  title       String?
+  subtitle    String?
+  sequence_no Int
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("project_gallery")
+}
+
+model ProjectKeyFeature {
+  id         String  @unique @default(uuid())
+  project_id String
+  project    Project @relation(fields: [project_id], references: [id])
+  feature    String
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("project_key_features")
+}
+
+model ProjectService {
+  id         String  @unique @default(uuid())
+  project_id String
+  project    Project @relation(fields: [project_id], references: [id])
+  service    String
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("project_services")
+}
+
+model Contact {
+  id         String @unique @default(uuid())
+  first_name String
+  last_name  String
+  email      String
+  phone      String
+  message    String @db.Text
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("contacts")
+}
+
+model Category {
+  id          String    @unique @default(uuid())
+  name        String
+  description String?
+  Projects    Project[]
+  News        News[]
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("categories")
+}
+
+model Career {
+  id               String @unique @default(uuid())
+  first_name       String
+  last_name        String
+  email            String
+  document_url     String
+  applied_position String
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("careers")
+}
+
+model News {
+  id            String   @unique @default(uuid())
+  title         String
+  subtitle      String?
+  description   String   @db.Text
+  category_id   String
+  category      Category @relation(fields: [category_id], references: [id])
+  publish_date  DateTime
+  tags          Json? // Stored as array
+  thumbnail_url String?
+  type          String
+
+  gallery NewsGallery[]
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("news")
+}
+
+model NewsGallery {
+  id          String  @unique @default(uuid())
+  news_id     String
+  news        News    @relation(fields: [news_id], references: [id])
+  image_url   String
+  title       String?
+  subtitle    String?
+  sequence_no Decimal @db.Decimal(20, 2)
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+  company_id String
+
+  @@map("news_gallery")
+}
+
+model CompanyAdditionalInfo {
+  id                String  @unique @default(uuid())
+  company_id        String
+  company           Company @relation(fields: [company_id], references: [id])
+  short_description String? @db.Text
+  facebook_link     String?
+  twitter_link      String?
+  instagram_link    String?
+  linkedin_link     String?
+  youtube_link      String?
+  whatsapp_number   String?
+  google_map_link   String? @db.Text
+  vision            String? @db.Text
+  mission           String? @db.Text
+
+  created_at DateTime @default(now())
+  created_by String
+  created_ip String?
+  updated_at DateTime @updatedAt
+  updated_by String?
+  updated_ip String?
+
+  @@map("company_additional_info")
+}

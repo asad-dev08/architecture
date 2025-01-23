@@ -1,0 +1,35 @@
+/* File upload hover effects */
+.upload-zone {
+  transition: all 0.3s ease;
+}
+
+.upload-zone:hover {
+  background-color: theme("colors.gray.50");
+}
+
+/* Form animations */
+.form-input,
+.form-select {
+  transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+  transform: translateY(-1px);
+}
+
+/* Success/Error message animations */
+.status-message {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,27 @@
+/* Image hover effects */
+.image-hover {
+  transition: all 0.5s ease;
+}
+
+.image-hover:hover {
+  transform: scale(1.05);
+}
+
+/* Feature hover effects */
+.feature-item {
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateX(10px);
+}
+
+/* Process number animation */
+.process-number {
+  transition: all 0.3s ease;
+}
+
+.process-item:hover .process-number {
+  color: theme("colors.primary.600");
+  transform: translateY(-5px);
+}
